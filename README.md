@@ -1,11 +1,11 @@
-Canny Edge Detector
+#Canny Edge Detector
 
 I built this to understand how edge detection actually works, rather than calling a library function that does everything behind the scenes. It’s a from-scratch Canny implementation in Python, using JAX for the array math and JIT compilation to speed things up.
 
 What it does:
 You upload an image, hit Detect edges, and get back a black-and-white map of the edges. Under the hood it runs the classic Canny steps:
 
-Grayscale: Turn the RGB image into brightness values.
+Grayscale: Turn the RGB image into brightness values
 Blur: Smooth out noise with a small Gaussian kernel.
 Gradients: Use Sobel filters to find where brightness changes, and in which direction.
 Thinning: Keep only the local peak along each gradient, so edges come out one pixel wide.
