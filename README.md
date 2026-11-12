@@ -1,48 +1,114 @@
 #Canny Edge Detector
 
-I built this to understand how edge detection actually works, rather than calling a library function that does everything behind the scenes. It’s a from-scratch Canny implementation in Python, using JAX for the array math and JIT compilation to speed things up.
+A Canny Edge Detector built from scratch using Python and JAX.
 
-What it does:
-You upload an image, hit Detect edges, and get back a black-and-white map of the edges. Under the hood it runs the classic Canny steps:
+I wanted to understand how edge detection works internally instead of just calling a library function and getting the final output. So I decided to implement the different stages of the Canny algorithm myself and see how they all come together.
 
-Grayscale: Turn the RGB image into brightness values
-Blur: Smooth out noise with a small Gaussian kernel.
-Gradients: Use Sobel filters to find where brightness changes, and in which direction.
-Thinning: Keep only the local peak along each gradient, so edges come out one pixel wide.
-Thresholding: Sort pixels into strong edges, weak edges, and noise.
-Hysteresis: Keep a weak edge only if it connects to a strong one.
+The project also has a small Streamlit interface where you can upload an image and see the detected edges.
 
-The hardest parts were the thinning and hysteresis steps. Both depend on checking neighboring pixels, which doesn’t translate neatly into vectorized code, so I had to rethink them as array operations.
+How it works:-
+The implementation follows the usual Canny pipeline:
 
-Running it:
-You’ll need Python 3.9 or newer.
+Grayscale: Converts the RGB image into grayscale.
+Gaussian Blur: Smooths the image to reduce noise before detecting edges.
+Sobel Filters: Calculates changes in brightness along the X and Y directions.
+Gradient Magnitude and Direction: Finds how strong the intensity changes are and which direction they occur in.
+Non-Maximum Suppression: Removes unnecessary responses around local gradient peaks to make the edges thinner.
+Double Thresholding: Separates pixels into strong edges, weak edges and non-edges.
+Hysteresis: Checks whether weak edges are connected to strong edges and removes those that aren't.
 
-bash
+The final result is a black-and-white image showing the detected edges.
+
+
+Running it locally:-
+
+You'll need Python 3.9 or newer.
+
+Clone the repository:
+
 git clone https://github.com/SriLasya-code/canny-edge-jax.git
 cd canny-edge-jax
+
+Create a virtual environment:
+
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+Activate it:
+
+Linux / macOS
+
+source .venv/bin/activate
+
+Windows
+
+.venv\Scripts\activate
+
+Install the dependencies:
+
 pip install -r requirements.txt
+
+Start the application:
+
 streamlit run pic.py
 
-If you want to use the function directly:
+Upload an image and the application will display the detected edges.
 
-python
+Using the function directly
+
+You can also use the Canny implementation without opening the Streamlit application:
+
 import numpy as np
 from PIL import Image
 from canny import canny_jit
 
-image = np.array(Image.open("photo.jpg").convert("RGB"), dtype=np.float32)
-edges = np.asarray(canny_jit(image))   # 1.0 = edge, 0.0 = not an edge
+image = np.array(
+    Image.open("photo.jpg").convert("RGB"),
+    dtype=np.float32
+)
 
+image = image / 255.0
+edges = np.asarray(canny_jit(image))
 
-Known rough edges:
+The output is a binary edge map:
 
-The blur size and sigma are hardcoded.
-Thresholds are based on the brightest gradient in the image, so one very bright spot can throw off the whole result.
-The image border sometimes shows false edges, because the filters pad with zeros.
-Large images are slow, and each new image size triggers a recompile.
-I’ve only tested it on a handful of images.
+1.0 represents an edge.
+0.0 represents a non-edge.
 
-Next steps:
-I want to fix the border handling, resize big uploads before processing, and compare the output against skimage.feature.canny on test images.
+Things that could be better:-
+The current implementation still has a few limitations:
+
+Gaussian kernel size and sigma are fixed.
+Thresholds depend on the maximum gradient response in the image.
+Zero padding can introduce unwanted responses near image boundaries.
+Large images can take longer to process.
+JAX may recompile when processing images with new shapes.
+Testing has only been done on a handful of images.
+
+What I'd like to improve:-
+There are a few things I'd like to work on next:
+
+Improve how image boundaries are handled.
+Resize large images before processing.
+Compare my implementation with skimage.feature.canny on different test images.
+
+Why I made this:-
+
+I mainly wanted to understand the mathematics behind Canny edge detection by actually implementing it rather than using an existing function.
+It took some trial and error, especially when moving from Python loops to JAX, but getting the different stages working together was the main goal of this project.
+
+A little about the implementation:-
+
+I initially started with traditional Python loops for operations like convolution. Although that helped me understand what was happening, the implementation became slow.
+I eventually moved to JAX and started replacing those loops with array operations.
+
+Some of the JAX features I used include:-
+
+lax.conv_general_dilated for convolution.
+
+jax.jit for compiling the pipeline.
+
+lax.cond for conditional operations.
+
+lax.while_loop for the iterative hysteresis stage.
+
+Moving from ordinary Python loops to JAX wasn't particularly straightforward. Non-Maximum Suppression and hysteresis were especially challenging because both involve checking neighbouring pixels. I had to rethink how I was implementing them rather than simply translating each Python loop directly.
