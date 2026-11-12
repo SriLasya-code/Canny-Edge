@@ -1,4 +1,4 @@
-#Canny Edge Detector
+Canny Edge Detector
 
 A Canny Edge Detector built from scratch using Python and JAX.
 
