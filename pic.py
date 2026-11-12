@@ -8,7 +8,7 @@ st.title("Canny edge detector")
 
 st.write(
     "Upload your image that needs to be processed"
-    "Using the Canny edge detector I made by torturing myself"
+    "Using the Canny edge detector I made"
 )
 
 upload_file = st.file_uploader("Choose your image",
