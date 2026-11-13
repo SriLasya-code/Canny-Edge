@@ -3,7 +3,7 @@ import jax.numpy as jnp
 from jax import lax
 import numpy as np
 
-def canny(image):
+def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
     #Converting the rgb image into a single-channeled gray image
     def rgb_gray(img):
         r = img[:, :, 0]
@@ -52,7 +52,7 @@ def canny(image):
         return result[0, :, :, 0]
         
    #Smoothing the grayscale image before calculating the gradients
-    G = guas(5, 1.45)
+    G = guas(5, sigma)
     blurred = ima(gray, G)
 
     #Calculating the image gradients using sobel filters to calculate the strength along the horizontal & vertical ddirection
@@ -144,8 +144,8 @@ def canny(image):
         maxv = jnp.max(nms_image)
 
         #Setting the threshold limit to the maximum gradient limit
-        highT = 0.2 * maxv
-        lowT = 0.5 * highT
+        highT = 0.2 * high_ratio
+        lowT = 0.5 * low_ratio
 
         #Returning an empty image if there are no meaningful edge response
         def zero_case(_):
