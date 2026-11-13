@@ -15,7 +15,7 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
 
     gray = rgb_gray(image)
 #Generating a guassian kernal to smoothen the image
-    def guas(size, sigma=1.0):
+    def guassian_kernal(size, sigma=1.0):
         #dividing the size of the image with 2 to know how many rows & coloumns to add for xero padding
         k = size // 2
 
@@ -34,7 +34,7 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
 
         return G
     #Applying convolution between image & kernal
-    def ima(image, kernal):
+    def Convolve(image, kernal):
         #adding the batch and channel size to know how many images are being processed at once(1 image) and how many colour channels are present(1 colour channel)
         fourd = image[None, :, :, None]
         kernald = kernal[:, :, None, None]
@@ -52,8 +52,8 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
         return result[0, :, :, 0]
         
    #Smoothing the grayscale image before calculating the gradients
-    G = guas(5, sigma)
-    blurred = ima(gray, G)
+    G = guassian_kernal(5, sigma)
+    blurred = Convolve(gray, G)
 
     #Calculating the image gradients using sobel filters to calculate the strength along the horizontal & vertical ddirection
     def sobel(image):
@@ -72,8 +72,8 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
         )
 
         #Calculating the intensities along horizontal & vertical directions
-        sx = ima(image, gx)
-        sy = ima(image, gy)
+        sx = Convolve(image, gx)
+        sy = Convolve(image, gy)
 
         #Calculating the gradient magnitude to know the total intensity
         magnitude = jnp.sqrt(sx**2 + sy**2)
@@ -177,7 +177,7 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
     thresholded = threshold(suppressed)
 
 #Connecting the weak edges and strong edges using Hysteresis
-    def Hysteresis(hys):
+    def hysteresis(hys):
         ed = (hys == 1)
         #Initially only the strong pixels are considered connected edges
 
@@ -226,7 +226,7 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
         return ed_.astype(jnp.float32)
         
     #Applying Hysteresis to produce the final edge map
-    edge = Hysteresis(thresholded)
+    edge = hysteresis(thresholded)
 
     return edge
 
