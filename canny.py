@@ -144,8 +144,8 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
         maxv = jnp.max(nms_image)
 
         #Setting the threshold limit to the maximum gradient limit
-        highT = 0.2 * high_ratio
-        lowT = 0.5 * low_ratio
+        highT = maxv * high_ratio
+        lowT = maxv * low_ratio
 
         #Returning an empty image if there are no meaningful edge response
         def zero_case(_):
@@ -218,7 +218,7 @@ def canny(image, sigma = 1.45, high_ratio = 0.2, low_ratio = 0.1):
         #Comtinuing until no additional weak pixels connect together 
         ed_, _ = lax.while_loop(
             lambda state: state[1],
-            cod,
+            condition,
             (ed, jnp.array(True))
         )
 
